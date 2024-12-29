@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  api:
+    build: ./api
+    ports:
+      - "8080:8080"
+    depends_on:
+      - neo4j
+    env_file:
+      - .env.example
+    networks:
+      - api-network
+
+  etl:
+    build: ./etl
+    depends_on:
+      - neo4j
+    env_file:
+      - .env.example
+    networks:
+      - api-network
+
+  neo4j:
+    image: neo4j:5.26.0
+    container_name: neo4j
+    ports:
+      - "7474:7474"   # Porta HTTP da interface web
+      - "7687:7687"   # Porta Bolt para conexões com drivers
+    volumes:
+      - neo4j_data:/data
+    env_file:
+      - .env.example
+    networks:
+      - api-network
+    environment:
+      NEO4J_AUTH: neo4j/uEmxeG37PVc8OsssGSuJV
+      NEO4J_apoc_import_file_enabled: 'true'
+      NEO4J_apoc_export_file_enabled: 'true'
+
+volumes:
+  neo4j_data:
+
+networks:
+  api-network:
+    driver: bridge
